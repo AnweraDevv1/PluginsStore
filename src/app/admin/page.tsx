@@ -256,12 +256,13 @@ export default function AdminPage() {
       let json: any;
       try { json = JSON.parse(text); } catch { throw new Error("Невалидный JSON"); }
 
-      // Поддержка 3 форматов: {projects: [...]}, [...], одиночный объект
+      // Поддержка форматов: {projects: [...]}, {project: {...}}, [...], одиночный объект
       const payload: any = {};
       if (Array.isArray(json)) payload.projects = json;
       else if (Array.isArray(json.projects)) payload.projects = json.projects;
-      else if (json.title && json.slug) payload.projects = [json];
-      else throw new Error("Формат: ожидается { \"projects\": [...] } или массив проектов");
+      else if (json.project && json.project.title) payload.projects = [json.project];
+      else if (json.title && (json.slug || json.shortDescription)) payload.projects = [json];
+      else throw new Error("Формат: ожидается { \"projects\": [...] } / { \"project\": {...} } / массив / одиночный проект");
 
       payload.mode = importMode;
 
@@ -284,10 +285,10 @@ export default function AdminPage() {
   }
 
   function handleDownloadSample() {
-    // Скачать готовый шаблон примера
+    // Скачать готовый шаблон ОДНОГО проекта
     const a = document.createElement("a");
-    a.href = "/sample-export.json";
-    a.download = "sample-projects.json";
+    a.href = "/sample-project.json";
+    a.download = "anweradev-example-plugin.json";
     a.click();
   }
 
@@ -340,29 +341,20 @@ export default function AdminPage() {
                 <span className="px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-mono uppercase tracking-widest text-zinc-400">JSON</span>
               </div>
               <p className="text-[13px] leading-relaxed text-zinc-400 mt-3 max-w-[620px]">
-                Сохрани все проекты в файл <span className="text-white font-mono">.json</span> → отдай нейросети на изучение/редактирование → импортируй обратно. Удобно для бэкапа и массовой правки.
+                Сохрани <span className="text-white">каждый проект отдельно</span> в <span className="text-white font-mono">.json</span> → отдай один файл нейросети на изучение/правка → импортируй обратно. Удобно для точечной работы с модом/плагином.
               </p>
               <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-zinc-500">
+                <span className="px-2.5 py-1 rounded-full bg-[#0a0a0b] border border-zinc-800">✓ каждый проект — свой файл</span>
                 <span className="px-2.5 py-1 rounded-full bg-[#0a0a0b] border border-zinc-800">✓ зависимости маппятся</span>
-                <span className="px-2.5 py-1 rounded-full bg-[#0a0a0b] border border-zinc-800">✓ коллизии slug → авто-суффикс</span>
-                <span className="px-2.5 py-1 rounded-full bg-[#0a0a0b] border border-zinc-800">✓ 100 проектов за раз</span>
+                <span className="px-2.5 py-1 rounded-full bg-[#0a0a0b] border border-zinc-800">✓ slug → авто-суффикс</span>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 w-full lg:w-auto lg:min-w-[340px]">
-              {/* Export */}
-              <button
-                onClick={handleExportAll}
-                disabled={exporting || projects.length===0}
-                className="w-full h-11 px-5 rounded-full bg-white text-black font-bold text-[13px] flex items-center justify-center gap-2 hover:bg-zinc-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {exporting ? "экспорт..." : `⬇ Экспортировать все (${projects.length}) → .json`}
-              </button>
-
-              {/* Import */}
+              {/* Import — главный */}
               <div className="flex gap-2">
                 <label className={`flex-1 h-11 rounded-full border flex items-center justify-center gap-2 text-[13px] font-bold cursor-pointer transition ${importing ? "bg-zinc-800 border-zinc-700 text-zinc-500" : "bg-[#ccff00] border-[#ccff00] text-black hover:bg-[#d4ff33]"}`}>
-                  <span>{importing ? "импорт..." : "⬆ Импортировать из файла"}</span>
+                  <span>{importing ? "импорт..." : "⬆ Импортировать из .json"}</span>
                   <input type="file" accept=".json,application/json" hidden onChange={handleImportFile} disabled={importing} />
                 </label>
                 <select
@@ -379,12 +371,18 @@ export default function AdminPage() {
                 {importMode === "create" ? "• создаст копии, даже если slug уже есть" : "• если slug совпал — перезапишет проект"}
               </div>
 
+              {/* Info: экспорт — отдельно */}
+              <div className="rounded-xl bg-[#0a0a0b] border border-zinc-800 p-3 text-[11px] leading-relaxed">
+                <div className="font-bold text-white flex items-center gap-1.5">⤓ Экспорт — отдельно</div>
+                <div className="text-zinc-500 mt-1">Каждый проект скачивается <span className="text-white">своим .json</span> — кнопка <span className="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono">⤓ json</span> у проекта в таблице снизу. Отдай один файл нейросети → она вернёт → импортируй.</div>
+              </div>
+
               {/* Sample */}
               <div className="flex gap-2 pt-1 border-t border-zinc-800/60 mt-1">
                 <button onClick={handleDownloadSample} className="flex-1 h-9 rounded-full bg-zinc-900 border border-zinc-800 text-[12px] font-mono hover:border-zinc-700 transition flex items-center justify-center gap-1.5">
-                  📦 Скачать пример (2 проекта)
+                  📦 Скачать пример (1 проект)
                 </button>
-                <a href="/sample-export.json" target="_blank" rel="noopener noreferrer" className="h-9 px-4 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono hover:border-zinc-700 transition flex items-center">открыть</a>
+                <a href="/sample-project.json" target="_blank" rel="noopener noreferrer" className="h-9 px-4 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono hover:border-zinc-700 transition flex items-center">открыть</a>
               </div>
             </div>
           </div>
@@ -393,15 +391,15 @@ export default function AdminPage() {
           <div className="relative mt-5 grid md:grid-cols-3 gap-3 text-[12px]">
             <div className="rounded-xl bg-[#0a0a0b] border border-zinc-800 p-3">
               <div className="font-bold text-white">1. Экспорт</div>
-              <div className="text-zinc-500 mt-1 leading-relaxed">Жми <span className="text-white">Экспортировать</span> → получишь <span className="font-mono text-zinc-300">anweradev-export-YYYY-MM-DD.json</span></div>
+              <div className="text-zinc-500 mt-1 leading-relaxed">В таблице нажми <span className="text-white font-mono">⤓ json</span> у нужного проекта → скачается <span className="font-mono text-zinc-300">anweradev-slug-YYYY-MM-DD.json</span></div>
             </div>
             <div className="rounded-xl bg-[#0a0a0b] border border-zinc-800 p-3">
               <div className="font-bold text-white">2. Нейросеть</div>
-              <div className="text-zinc-500 mt-1 leading-relaxed">Отдай файл ChatGPT/Claude: <span className="text-zinc-300">“измени описания, добавь теги, верни JSON”</span></div>
+              <div className="text-zinc-500 mt-1 leading-relaxed">Отдай <span className="text-white">один файл</span> ChatGPT/Claude: <span className="text-zinc-300">“измени описание, добавь фичи, верни JSON”</span></div>
             </div>
             <div className="rounded-xl bg-[#0a0a0b] border border-zinc-800 p-3">
               <div className="font-bold text-white">3. Импорт</div>
-              <div className="text-zinc-500 mt-1 leading-relaxed">Жми <span className="text-white">Импортировать</span> → выбери изменённый файл → готово</div>
+              <div className="text-zinc-500 mt-1 leading-relaxed">Жми <span className="text-white">Импортировать</span> → выбери изменённый файл → готово. Режим <span className="text-zinc-300">upsert</span> перезапишет, <span className="text-zinc-300">create</span> — создаст копию.</div>
             </div>
           </div>
         </div>

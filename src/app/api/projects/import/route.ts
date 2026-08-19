@@ -73,18 +73,22 @@ export async function POST(req: NextRequest) {
       if (body.mode === "upsert") mode = "upsert";
     }
 
-    // Нормализуем вход: массив или объект с projects
+    // Нормализуем вход: массив или объект с projects / project (одиночный файл)
     let toImport: ImportProject[] = [];
     if (Array.isArray(body)) {
       toImport = body;
     } else if (Array.isArray(body.projects)) {
       toImport = body.projects;
       if (body.mode === "upsert") mode = "upsert";
-    } else if (body.title && body.slug) {
-      // одиночный проект объект
+    } else if (body.project && typeof body.project === "object" && body.project.title) {
+      // формат одиночного экспорта: { project: {...} }
+      toImport = [body.project];
+      if (body.mode === "upsert") mode = "upsert";
+    } else if (body.title && (body.slug || body.shortDescription)) {
+      // одиночный проект объект напрямую
       toImport = [body];
     } else {
-      return NextResponse.json({ error: "Invalid format: expected { projects: [...] } or [...] or single project" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid format: expected { projects: [...] } or { project: {...} } or [...] or single project" }, { status: 400 });
     }
 
     if (toImport.length === 0) {
