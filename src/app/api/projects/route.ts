@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { projects } from "@/db/schema";
+import { projects, type Project } from "@/db/schema";
 import { extractToken, verifyToken } from "@/lib/auth";
 import { desc, eq } from "drizzle-orm";
 
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const rows = await db.select().from(projects).orderBy(desc(projects.createdAt));
+    const rows: Project[] = await db.select().from(projects).orderBy(desc(projects.createdAt));
     // Посетителям показываем только опубликованные
     const allProjects = wantAll ? rows : rows.filter(p => p.status === "published");
     return NextResponse.json(allProjects);

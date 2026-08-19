@@ -1,24 +1,42 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
+/**
+ * Ленивое подключение к PostgreSQL.
+ * Раньше код бросал ошибку на этапе импорта, из-за чего `next build`
+ * падал, если переменная DATABASE_URL не задана (например, на Vercel
+ * до настройки окружения). Теперь подключение создаётся только при
+ * первом реальном обращении к базе.
+ */
 const databaseUrl = process.env.DATABASE_URL;
 
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required");
+let _pool: Pool | null = null;
+let _db: any = null;
+
+function getDb(): any {
+  if (!_db) {
+    if (!databaseUrl) {
+      throw new Error("DATABASE_URL is required");
+    }
+    _pool = new Pool({ connectionString: databaseUrl });
+    _db = drizzle(_pool);
+  }
+  return _db;
 }
 
-const globalForDb = globalThis as typeof globalThis & {
-  __arenaNextJsPostgresqlPool?: Pool;
-};
+/**
+ * Прокси: методы базы доступны только в момент вызова.
+ * На этапе сборки модуль просто импортируется — ошибки нет.
+ */
+export const db: any = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      const real = getDb();
+      const v = real[prop];
+      return typeof v === "function" ? v.bind(real) : v;
+    },
+  }
+);
 
-export const pool =
-  globalForDb.__arenaNextJsPostgresqlPool ??
-  new Pool({
-    connectionString: databaseUrl,
-  });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__arenaNextJsPostgresqlPool = pool;
-}
-
-export const db = drizzle(pool);
+export { _pool as pool };
