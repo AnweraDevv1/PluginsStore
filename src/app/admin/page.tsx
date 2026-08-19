@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authHeaders, clearToken } from "@/lib/clientAuth";
-import { driveImageUrl } from "@/lib/media";
+import { normalizeImageUrl } from "@/lib/media";
 
 interface Project {
   id: number;
@@ -421,7 +421,7 @@ export default function AdminPage() {
                   </div>
                   {form.banner ? (
                     <div className="mt-3 relative rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900">
-                      <img src={driveImageUrl(form.banner)} alt="" className="w-full h-32 object-cover" onError={e=>{(e.target as HTMLImageElement).style.opacity="0.15";}} />
+                      <img src={normalizeImageUrl(form.banner)} alt="" className="w-full h-32 object-cover" onError={e=>{(e.target as HTMLImageElement).style.opacity="0.15";}} />
                       <button onClick={()=>setForm({...form, banner:""})} className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-white text-[12px] flex items-center justify-center">✕</button>
                     </div>
                   ) : (
@@ -452,7 +452,7 @@ export default function AdminPage() {
                     <div className="grid grid-cols-2 gap-2">
                       {form.screenshots.map((url:string,i:number)=>(
                         <div key={i} className="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 aspect-[16/10]">
-                          <img src={driveImageUrl(url)} alt="" className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.opacity="0.15";}} />
+                          <img src={normalizeImageUrl(url)} alt="" className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.opacity="0.15";}} />
                           <button onClick={()=>setForm({...form, screenshots: form.screenshots.filter((_:any,idx:number)=>idx!==i)})} className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-white text-[12px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition">✕</button>
                           <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-black/60 backdrop-blur text-[9px] font-mono truncate">{url.slice(0,40)}</div>
                         </div>

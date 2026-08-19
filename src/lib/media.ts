@@ -63,3 +63,30 @@ export function videoEmbedUrl(url: string): string {
   // Google Drive
   return driveVideoEmbed(url);
 }
+
+/**
+ * Конвертирует GitHub blob-ссылку в прямую raw-ссылку для тега <img>.
+ *   github.com/user/repo/blob/branch/path.png → raw.githubusercontent.com/user/repo/branch/path.png
+ */
+export function githubImageUrl(url: string): string {
+  if (!url) return url;
+  const m = url.match(/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+?)(?:\?.*)?$/);
+  if (m) {
+    const [, user, repo, path] = m;
+    return `https://raw.githubusercontent.com/${user}/${repo}/${path}`;
+  }
+  return url;
+}
+
+/**
+ * Универсальный конвертер URL картинки в прямую ссылку для <img>.
+ * Поддерживает Google Drive и GitHub blob → raw. Если не распознал — отдаёт как есть.
+ */
+export function normalizeImageUrl(url: string): string {
+  if (!url) return url;
+  const d = driveImageUrl(url);
+  if (d !== url) return d;
+  const g = githubImageUrl(url);
+  if (g !== url) return g;
+  return url;
+}

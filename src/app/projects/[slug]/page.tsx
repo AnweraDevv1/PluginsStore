@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { driveImageUrl, driveVideoEmbed, videoEmbedUrl } from "@/lib/media";
+import { normalizeImageUrl, driveVideoEmbed, videoEmbedUrl } from "@/lib/media";
 
 interface Project {
   id: number;
@@ -120,9 +120,9 @@ export default function ProjectPage() {
 
             {/* Gallery (скриншоты) */}
             <div className="space-y-3">
-              <div className="aspect-[16/10] rounded-[20px] overflow-hidden bg-zinc-900 border border-zinc-800 relative group cursor-zoom-in" onClick={()=>{ if(project.screenshots[0]){ setActiveImg(driveImageUrl(project.screenshots[0])); setShowLightbox(true);} }}>
+              <div className="aspect-[16/10] rounded-[20px] overflow-hidden bg-zinc-900 border border-zinc-800 relative group cursor-zoom-in" onClick={()=>{ if(project.screenshots[0]){ setActiveImg(normalizeImageUrl(project.screenshots[0])); setShowLightbox(true);} }}>
                 {project.screenshots?.[0] ? (
-                  <img src={driveImageUrl(project.screenshots[0])} className="w-full h-full object-cover group-hover:scale-[1.02] transition" alt={project.title} onError={e=>{(e.target as HTMLImageElement).parentElement!.classList.add("bg-zinc-900");}} />
+                  <img src={normalizeImageUrl(project.screenshots[0])} className="w-full h-full object-cover group-hover:scale-[1.02] transition" alt={project.title} onError={e=>{(e.target as HTMLImageElement).parentElement!.classList.add("bg-zinc-900");}} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-900 to-zinc-950 text-6xl">🧩</div>
                 )}
@@ -132,8 +132,8 @@ export default function ProjectPage() {
               {project.screenshots?.length > 1 && (
                 <div className="grid grid-cols-4 gap-3">
                   {project.screenshots.slice(1,5).map((img,i)=>(
-                    <button key={i} onClick={()=>{ setActiveImg(driveImageUrl(img)); setShowLightbox(true); }} className="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition">
-                      <img src={driveImageUrl(img)} className="w-full h-full object-cover" alt="" />
+                    <button key={i} onClick={()=>{ setActiveImg(normalizeImageUrl(img)); setShowLightbox(true); }} className="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition">
+                      <img src={normalizeImageUrl(img)} className="w-full h-full object-cover" alt="" />
                     </button>
                   ))}
                 </div>
@@ -147,7 +147,7 @@ export default function ProjectPage() {
       {project.banner && (
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-10">
           <div className="relative rounded-[24px] overflow-hidden border border-zinc-800 bg-[#0f0f11] aspect-[21/9] min-h-[200px]">
-            <img src={driveImageUrl(project.banner)} alt={`${project.title} — баннер`} className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none";}} />
+            <img src={normalizeImageUrl(project.banner)} alt={`${project.title} — баннер`} className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none";}} />
             <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur border border-white/10 text-[10px] font-mono uppercase tracking-widest text-zinc-300">баннер</div>
           </div>
         </div>
@@ -203,8 +203,8 @@ export default function ProjectPage() {
               <div className="font-mono text-[11px] uppercase tracking-widest text-zinc-500 mb-4">/ скриншоты • {project.screenshots.length}</div>
               <div className="grid gap-4">
                 {project.screenshots.map((img,i)=>(
-                  <button key={i} onClick={()=>{ setActiveImg(driveImageUrl(img)); setShowLightbox(true); }} className="rounded-[16px] overflow-hidden border border-zinc-800 bg-zinc-900 hover:border-zinc-700 transition">
-                    <img src={driveImageUrl(img)} alt={`screenshot ${i}`} className="w-full" onError={e=>{(e.target as HTMLImageElement).style.opacity="0.2";}} />
+                  <button key={i} onClick={()=>{ setActiveImg(normalizeImageUrl(img)); setShowLightbox(true); }} className="rounded-[16px] overflow-hidden border border-zinc-800 bg-zinc-900 hover:border-zinc-700 transition">
+                    <img src={normalizeImageUrl(img)} alt={`screenshot ${i}`} className="w-full" onError={e=>{(e.target as HTMLImageElement).style.opacity="0.2";}} />
                   </button>
                 ))}
               </div>

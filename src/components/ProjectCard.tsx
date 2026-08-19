@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { driveImageUrl } from "@/lib/media";
+import { normalizeImageUrl } from "@/lib/media";
 
 interface Project {
   id: number;
@@ -30,7 +30,7 @@ export default function ProjectCard({ project }: { project: Project }) {
       {/* Image */}
       <div className="aspect-[16/10] bg-[#0f0f10] relative overflow-hidden">
         {cover && !imgError ? (
-          <img src={driveImageUrl(cover)} alt={project.title} onError={()=>setImgError(true)} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
+          <img src={normalizeImageUrl(cover)} alt={project.title} onError={()=>setImgError(true)} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-900 to-zinc-950 relative">
             <div className="absolute inset-0 grid-bg opacity-30" />

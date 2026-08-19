@@ -6,7 +6,7 @@ import ProjectCard from "@/components/ProjectCard";
 import AnimatedCode from "@/components/AnimatedCode";
 import Reveal from "@/components/Reveal";
 import Link from "next/link";
-import { driveImageUrl } from "@/lib/media";
+import { normalizeImageUrl } from "@/lib/media";
 
 interface Project {
   id: number;
@@ -228,7 +228,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="w-full md:w-[360px] aspect-[16/10] rounded-[16px] bg-zinc-900 overflow-hidden border border-zinc-800">
-              {(featured[0].banner || featured[0].screenshots[0]) ? <img src={driveImageUrl(featured[0].banner || featured[0].screenshots[0])} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-5xl">🚀</div>}
+              {(featured[0].banner || featured[0].screenshots[0]) ? <img src={normalizeImageUrl(featured[0].banner || featured[0].screenshots[0])} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-5xl">🚀</div>}
             </div>
           </div>
           </Reveal>
