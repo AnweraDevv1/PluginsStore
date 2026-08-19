@@ -20,6 +20,7 @@ interface Project {
   curseforgeUrl?: string;
   banner?: string;
   videoUrl?: string;
+  dependencies?: number[];
   screenshots: string[];
   tags: string[];
   features: string[];
@@ -44,6 +45,7 @@ const EMPTY_FORM: Partial<Project> = {
   curseforgeUrl: "",
   banner: "",
   videoUrl: "",
+  dependencies: [],
   screenshots: [],
   tags: [],
   features: [],
@@ -383,6 +385,39 @@ export default function AdminPage() {
                     <label className="text-[11px] font-mono uppercase text-zinc-500 block mb-2">размер файла</label>
                     <input value={form.fileSize} onChange={e=>setForm({...form, fileSize:e.target.value})} placeholder="~2.5 MB" className="w-full h-10 rounded-xl bg-[#0a0a0b] border border-zinc-800 px-3 text-[13px] font-mono" />
                   </div>
+                </div>
+
+                {/* ЗАВИСИМОСТИ: чекбоксы по всем остальным проектам */}
+                <div className="rounded-[16px] bg-[#0a0a0b] border border-zinc-800 p-4">
+                  <div className="font-bold text-[13px] mb-2">🔗 Зависимости (другие проекты)</div>
+                  <div className="text-[11px] text-zinc-500 mb-3">Этот проект работает только с указанными ниже. Отметь галочками нужные:</div>
+                  {projects.filter(p => p.id !== form.id).length === 0 ? (
+                    <div className="text-[12px] font-mono text-zinc-600">нет других проектов — сначала создай основной</div>
+                  ) : (
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-2">
+                      {projects.filter(p => p.id !== form.id).map(p => (
+                        <label key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-900 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={(form.dependencies || []).includes(p.id)}
+                            onChange={e => {
+                              const cur = form.dependencies || [];
+                              const upd = e.target.checked
+                                ? [...cur, p.id]
+                                : cur.filter((id: number) => id !== p.id);
+                              setForm({...form, dependencies: upd});
+                            }}
+                            className="w-4 h-4 rounded accent-[#ccff00]"
+                          />
+                          <span className="flex-1 text-[13px]">{p.title}</span>
+                          <span className="text-[11px] font-mono text-zinc-500">v{p.version}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {form.dependencies && form.dependencies.length > 0 && (
+                    <div className="text-[11px] text-zinc-400 mt-3">выбрано: {form.dependencies.length}</div>
+                  )}
                 </div>
               </div>
 

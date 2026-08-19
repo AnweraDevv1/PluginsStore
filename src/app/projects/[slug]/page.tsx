@@ -21,6 +21,8 @@ interface Project {
   curseforgeUrl?: string;
   banner?: string;
   videoUrl?: string;
+  dependencies?: number[];
+  dependencyDetails?: { id: number; slug: string; title: string; version: string; fileSize: string; downloadUrl: string }[];
   screenshots: string[];
   tags: string[];
   features: string[];
@@ -95,6 +97,25 @@ export default function ProjectPage() {
                   <span key={t} className="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[12px] font-mono text-zinc-400">#{t}</span>
                 ))}
               </div>
+
+              {/* Красивая рамка зависимостей */}
+              {project.dependencyDetails && project.dependencyDetails.length > 0 && (
+                <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-[#7000ff]/20 via-[#18181b] to-[#ccff00]/10 border border-[#7000ff]/30 max-w-[600px]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-6 h-6 rounded-md bg-[#7000ff]/20 border border-[#7000ff]/40 flex items-center justify-center text-[14px]">📦</span>
+                    <span className="text-[11px] font-mono uppercase tracking-widest text-[#a78bfa]">Зависит от</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {project.dependencyDetails.map(d => (
+                      <Link key={d.id} href={`/projects/${d.slug}`} className="group flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-xl bg-black/40 border border-[#7000ff]/30 hover:border-[#ccff00]/60 transition-all">
+                        <span className="text-[15px]">🔗</span>
+                        <span className="text-[13px] font-bold group-hover:text-[#ccff00] transition-colors">{d.title}</span>
+                        <span className="text-[11px] font-mono text-zinc-400 ml-1">v{d.version}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <button onClick={handleDownload} className="h-[52px] px-8 rounded-full bg-white text-black font-black text-[14px] flex items-center gap-3 hover:bg-[#ccff00] transition">
@@ -216,10 +237,31 @@ export default function ProjectPage() {
         <div className="lg:sticky lg:top-[100px] self-start space-y-6">
           <div className="rounded-[20px] bg-[#151518] border border-zinc-800 p-6">
             <div className="font-bold text-[16px] mb-4">Скачать проект</div>
-            <button onClick={handleDownload} className="w-full h-[48px] rounded-full bg-[#ccff00] text-black font-black text-[14px] hover:bg-[#d4ff33] transition">
-              ⬇ СКАЧАТЬ {project.fileSize}
+            <button onClick={handleDownload} className="w-full h-[52px] rounded-full bg-[#ccff00] text-black font-black text-[14px] hover:bg-[#d4ff33] transition flex items-center justify-center gap-2">
+              <span>⬇ СКАЧАТЬ ЭТОТ МОД</span>
+              <span className="font-mono text-[12px] opacity-80">{project.fileSize}</span>
             </button>
             <div className="mt-3 text-[11px] font-mono text-zinc-500 text-center">Версия {project.version} • {project.minecraftVersion}</div>
+
+            {/* Кнопки скачивания зависимостей */}
+            {project.dependencyDetails && project.dependencyDetails.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-zinc-800">
+                <div className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-2 flex items-center gap-1.5">
+                  <span>📦</span> Зависимости
+                </div>
+                <div className="space-y-2">
+                  {project.dependencyDetails.map(d => (
+                    <a key={d.id} href={`/api/projects/slug/${d.slug}/download`} className="flex items-center justify-between w-full h-11 px-4 rounded-full bg-[#7000ff]/10 border border-[#7000ff]/30 text-white text-[13px] font-bold hover:bg-[#7000ff]/20 hover:border-[#7000ff]/60 transition-all">
+                      <span className="flex items-center gap-2">
+                        <span>📦</span>
+                        <span className="truncate">{d.title}</span>
+                      </span>
+                      <span className="font-mono text-[11px] text-zinc-400">v{d.version} ↗</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="mt-6 space-y-2.5 text-[13px]">
               {project.githubUrl && <a href={project.githubUrl} target="_blank" className="flex items-center justify-between p-3 rounded-xl bg-[#0a0a0b] border border-zinc-800 hover:border-zinc-700"><span>GitHub исходники</span><span>↗</span></a>}
               {project.curseforgeUrl && <a href={project.curseforgeUrl} target="_blank" className="flex items-center justify-between p-3 rounded-xl bg-[#0a0a0b] border border-zinc-800 hover:border-zinc-700"><span>CurseForge</span><span>↗</span></a>}

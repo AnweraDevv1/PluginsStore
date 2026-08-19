@@ -112,17 +112,20 @@ export default function HomePage() {
                 </a>
               </div>
 
-              {/* Stats bar */}
+              {/* Stats bar — СТАТИЧНЫЕ значения. Меняй числа/текст ниже прямо тут */}
               <div className="mt-12 grid grid-cols-3 gap-6 max-w-[440px] border-t border-zinc-900 pt-8">
                 <div>
-                  <div className="text-[32px] font-black leading-none">{projects.length}+</div>
+                  {/* ↳ Число проектов — поменяй на нужное */}
+                  <div className="text-[32px] font-black leading-none">8+</div>
                   <div className="text-[11px] font-mono text-zinc-500 mt-1 uppercase tracking-widest">проектов</div>
                 </div>
                 <div>
-                  <div className="text-[32px] font-black leading-none">{(totalDownloads/1000).toFixed(1)}k+</div>
+                  {/* ↳ Число скачиваний — поменяй на нужное */}
+                  <div className="text-[32px] font-black leading-none">2.4k+</div>
                   <div className="text-[11px] font-mono text-zinc-500 mt-1 uppercase tracking-widest">скачиваний</div>
                 </div>
                 <div>
+                  {/* ↳ Рейтинг — поменяй на нужный */}
                   <div className="text-[32px] font-black leading-none">4.9/5</div>
                   <div className="text-[11px] font-mono text-zinc-500 mt-1 uppercase tracking-widest">рейтинг</div>
                 </div>

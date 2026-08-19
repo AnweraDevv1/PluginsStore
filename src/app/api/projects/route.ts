@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       curseforgeUrl: body.curseforgeUrl || null,
       banner: body.banner || null,
       videoUrl: body.videoUrl || null,
+      dependencies: Array.isArray(body.dependencies) ? body.dependencies.map((n:any)=>parseInt(n)).filter((n:any)=>!isNaN(n)) : [],
       screenshots: body.screenshots || [],
       tags: body.tags || [],
       features: body.features || [],

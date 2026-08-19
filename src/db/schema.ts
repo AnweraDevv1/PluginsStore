@@ -15,6 +15,7 @@ export const projects = pgTable("projects", {
   curseforgeUrl: text("curseforge_url"),
   banner: text("banner"),
   videoUrl: text("video_url"),
+  dependencies: integer("dependencies").array().default([]),
   screenshots: jsonb("screenshots").$type<string[]>().default([]),
   tags: jsonb("tags").$type<string[]>().default([]),
   features: jsonb("features").$type<string[]>().default([]),
