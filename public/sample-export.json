@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "exportedAt": "2026-08-19T00:00:00.000Z",
+  "count": 2,
+  "_hint": "Пример экспорта AnweraDev PluginsStore. Отдай этот файл нейросети чтобы она изучила структуру, изменила поля и вернула обратно. Затем импортируй через админку (Импорт).",
+  "projects": [
+    {
+      "title": "ExamplePlugin — Пример плагина",
+      "slug": "example-plugin",
+      "shortDescription": "Демо-плагин для Paper 1.20+ с кастомными зачарованиями и GUI. Показывает как должен выглядеть проект в портфолио.",
+      "description": "## ExamplePlugin\n\nДемо-плагин для проверки импорта/экспорта.\n\n### Особенности\n- 🔊 12 кастомных зачарований\n- ⚙️ GUI конфигуратор `/enchants`\n- 🔧 Поддержка PlaceholderAPI\n- ⚡ Асинхронная БД (MySQL / SQLite)\n\n### Команды\n- `/example help` — помощь\n- `/example reload` — перезагрузка\n\n### Установка\n1. Помести `.jar` в `/plugins`\n2. Перезапусти сервер\n3. Настрой `config.yml`\n\n> Этот проект создан как шаблон — замени ссылки, скриншоты и описание на свои.",
+      "category": "plugin",
+      "version": "1.0.0",
+      "minecraftVersion": "1.20+",
+      "downloadUrl": "https://github.com/AnweraDevv1/PluginsStore/releases/download/v1.0.0/ExamplePlugin-1.0.0.jar",
+      "githubUrl": "https://github.com/AnweraDevv1/PluginsStore",
+      "modrinthUrl": "https://modrinth.com/plugin/example",
+      "curseforgeUrl": null,
+      "banner": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&h=600&fit=crop",
+      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "dependencies": [],
+      "screenshots": [
+        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&h=500&fit=crop",
+        "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=500&fit=crop"
+      ],
+      "tags": ["paper", "enchants", "gui", "papi", "example"],
+      "features": [
+        "12 кастомных зачарований с анимацией",
+        "GUI на 3 страницы",
+        "Поддержка PAPI + Vault",
+        "Оптимизация: 0.02ms тик"
+      ],
+      "fileSize": "~1.8 MB",
+      "featured": true,
+      "status": "published",
+      "downloads": 0,
+      "_originalId": 1
+    },
+    {
+      "title": "ExampleMod — Пример Fabric мода",
+      "slug": "example-fabric-mod",
+      "shortDescription": "Демо Fabric/Forge мод с новыми блоками и кастомным рендером. Шаблон для импорта.",
+      "description": "## ExampleMod\n\nШаблон мода для демонстрации импорта.\n\n### Что внутри\n- Блоки: `example_block`, `glowing_ore`\n- Миксины для рендера\n- Совместимость Fabric + Forge через Architectury\n\n### Зависимости\n- Fabric API (для Fabric)\n- Forge 47.1.0+ (для Forge)\n\nЗависимости можно указать в админке: выбери основной плагин/мод в чекбоксах.",
+      "category": "mod",
+      "version": "2.1.3",
+      "minecraftVersion": "1.20.1",
+      "downloadUrl": "https://cdn.modrinth.com/data/example/versions/2.1.3/example-mod-2.1.3.jar",
+      "githubUrl": "https://github.com/AnweraDevv1/example-mod",
+      "modrinthUrl": "https://modrinth.com/mod/example-mod",
+      "curseforgeUrl": "https://www.curseforge.com/minecraft/mc-mods/example-mod",
+      "banner": "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=1200&h=600&fit=crop",
+      "videoUrl": "",
+      "dependencies": [1],
+      "screenshots": [
+        "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&h=500&fit=crop"
+      ],
+      "tags": ["fabric", "forge", "architectury", "kotlin", "example"],
+      "features": [
+        "Кроссплатформа Fabric/Forge",
+        "Кастомный рендер блоков",
+        "JEI интеграция",
+        "Конфиг через Cloth Config"
+      ],
+      "fileSize": "~3.2 MB",
+      "featured": false,
+      "status": "published",
+      "downloads": 0,
+      "_originalId": 2
+    }
+  ]
+}

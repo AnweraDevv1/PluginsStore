@@ -64,6 +64,9 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [codeAnim, setCodeAnim] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importMode, setImportMode] = useState<"create" | "upsert">("create");
 
   // auth check
   useEffect(() => {
@@ -194,6 +197,100 @@ export default function AdminPage() {
     router.push("/login");
   }
 
+  // === Импорт / Экспорт ===
+  async function handleExportAll() {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/projects/export", { headers: authHeaders() });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const cd = res.headers.get("Content-Disposition");
+      const filename = cd?.match(/filename="?([^"]+)"?/)?.[1] || `anweradev-export-${new Date().toISOString().slice(0,10)}.json`;
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      alert("Ошибка экспорта: " + e.message);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleExportSingle(p: Project) {
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/projects/export?slugs=${encodeURIComponent(p.slug)}`, { headers: authHeaders() });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `anweradev-${p.slug}-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      alert("Ошибка экспорта: " + e.message);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith(".json")) {
+      alert("Выбери JSON файл (экспорт из PluginsStore)");
+      e.target.value = "";
+      return;
+    }
+    setImporting(true);
+    try {
+      const text = await file.text();
+      let json: any;
+      try { json = JSON.parse(text); } catch { throw new Error("Невалидный JSON"); }
+
+      // Поддержка 3 форматов: {projects: [...]}, [...], одиночный объект
+      const payload: any = {};
+      if (Array.isArray(json)) payload.projects = json;
+      else if (Array.isArray(json.projects)) payload.projects = json.projects;
+      else if (json.title && json.slug) payload.projects = [json];
+      else throw new Error("Формат: ожидается { \"projects\": [...] } или массив проектов");
+
+      payload.mode = importMode;
+
+      const res = await fetch("/api/projects/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Import failed");
+
+      alert(`✅ Готово!\nИмпортировано новых: ${data.imported}\nОбновлено: ${data.updated}\nПропущено: ${data.skipped}${data.errors ? "\n\nОшибки:\n" + data.errors.join("\n") : ""}`);
+      fetchProjects();
+    } catch (err: any) {
+      alert("Ошибка импорта: " + err.message);
+    } finally {
+      setImporting(false);
+      e.target.value = "";
+    }
+  }
+
+  function handleDownloadSample() {
+    // Скачать готовый шаблон примера
+    const a = document.createElement("a");
+    a.href = "/sample-export.json";
+    a.download = "sample-projects.json";
+    a.click();
+  }
+
   if (loading) {
     return <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center text-zinc-500 font-mono">загрузка админки...</div>;
   }
@@ -230,6 +327,83 @@ export default function AdminPage() {
               <div className="text-[28px] font-black mt-2 leading-none">{s.value}</div>
             </div>
           ))}
+        </div>
+
+        {/* Импорт / Экспорт — карточка */}
+        <div className="rounded-[20px] bg-gradient-to-br from-[#151518] to-[#0f0f11] border border-zinc-800 p-6 mb-6 relative overflow-hidden">
+          <div className="absolute -right-20 -top-20 w-60 h-60 bg-[#ccff00]/[0.07] rounded-full blur-[40px] pointer-events-none" />
+          <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#ccff00] flex items-center justify-center text-black text-[16px]">⇅</div>
+                <h2 className="text-[18px] font-black tracking-tight">Импорт / Экспорт</h2>
+                <span className="px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-mono uppercase tracking-widest text-zinc-400">JSON</span>
+              </div>
+              <p className="text-[13px] leading-relaxed text-zinc-400 mt-3 max-w-[620px]">
+                Сохрани все проекты в файл <span className="text-white font-mono">.json</span> → отдай нейросети на изучение/редактирование → импортируй обратно. Удобно для бэкапа и массовой правки.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-zinc-500">
+                <span className="px-2.5 py-1 rounded-full bg-[#0a0a0b] border border-zinc-800">✓ зависимости маппятся</span>
+                <span className="px-2.5 py-1 rounded-full bg-[#0a0a0b] border border-zinc-800">✓ коллизии slug → авто-суффикс</span>
+                <span className="px-2.5 py-1 rounded-full bg-[#0a0a0b] border border-zinc-800">✓ 100 проектов за раз</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 w-full lg:w-auto lg:min-w-[340px]">
+              {/* Export */}
+              <button
+                onClick={handleExportAll}
+                disabled={exporting || projects.length===0}
+                className="w-full h-11 px-5 rounded-full bg-white text-black font-bold text-[13px] flex items-center justify-center gap-2 hover:bg-zinc-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {exporting ? "экспорт..." : `⬇ Экспортировать все (${projects.length}) → .json`}
+              </button>
+
+              {/* Import */}
+              <div className="flex gap-2">
+                <label className={`flex-1 h-11 rounded-full border flex items-center justify-center gap-2 text-[13px] font-bold cursor-pointer transition ${importing ? "bg-zinc-800 border-zinc-700 text-zinc-500" : "bg-[#ccff00] border-[#ccff00] text-black hover:bg-[#d4ff33]"}`}>
+                  <span>{importing ? "импорт..." : "⬆ Импортировать из файла"}</span>
+                  <input type="file" accept=".json,application/json" hidden onChange={handleImportFile} disabled={importing} />
+                </label>
+                <select
+                  value={importMode}
+                  onChange={e=>setImportMode(e.target.value as any)}
+                  className="h-11 rounded-full bg-zinc-900 border border-zinc-800 px-3 text-[11px] font-mono text-zinc-300 focus:border-zinc-700 outline-none"
+                  title="Режим импорта"
+                >
+                  <option value="create">создать новые</option>
+                  <option value="upsert">обновить по slug</option>
+                </select>
+              </div>
+              <div className="text-[10px] font-mono text-zinc-500 leading-relaxed text-center">
+                {importMode === "create" ? "• создаст копии, даже если slug уже есть" : "• если slug совпал — перезапишет проект"}
+              </div>
+
+              {/* Sample */}
+              <div className="flex gap-2 pt-1 border-t border-zinc-800/60 mt-1">
+                <button onClick={handleDownloadSample} className="flex-1 h-9 rounded-full bg-zinc-900 border border-zinc-800 text-[12px] font-mono hover:border-zinc-700 transition flex items-center justify-center gap-1.5">
+                  📦 Скачать пример (2 проекта)
+                </button>
+                <a href="/sample-export.json" target="_blank" rel="noopener noreferrer" className="h-9 px-4 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono hover:border-zinc-700 transition flex items-center">открыть</a>
+              </div>
+            </div>
+          </div>
+
+          {/* Мини-инструкция */}
+          <div className="relative mt-5 grid md:grid-cols-3 gap-3 text-[12px]">
+            <div className="rounded-xl bg-[#0a0a0b] border border-zinc-800 p-3">
+              <div className="font-bold text-white">1. Экспорт</div>
+              <div className="text-zinc-500 mt-1 leading-relaxed">Жми <span className="text-white">Экспортировать</span> → получишь <span className="font-mono text-zinc-300">anweradev-export-YYYY-MM-DD.json</span></div>
+            </div>
+            <div className="rounded-xl bg-[#0a0a0b] border border-zinc-800 p-3">
+              <div className="font-bold text-white">2. Нейросеть</div>
+              <div className="text-zinc-500 mt-1 leading-relaxed">Отдай файл ChatGPT/Claude: <span className="text-zinc-300">“измени описания, добавь теги, верни JSON”</span></div>
+            </div>
+            <div className="rounded-xl bg-[#0a0a0b] border border-zinc-800 p-3">
+              <div className="font-bold text-white">3. Импорт</div>
+              <div className="text-zinc-500 mt-1 leading-relaxed">Жми <span className="text-white">Импортировать</span> → выбери изменённый файл → готово</div>
+            </div>
+          </div>
         </div>
 
         {/* Header + create */}
@@ -276,7 +450,8 @@ export default function AdminPage() {
                     <td className="p-4 font-mono">{p.downloads}</td>
                     <td className="p-4"><span className={`px-2 py-1 rounded-full text-[11px] font-mono ${p.status==="published" ? "bg-[#00ff88]/10 text-[#00ff88] border border-[#00ff88]/20" : "bg-zinc-800 text-zinc-400"}`}>{p.status}</span></td>
                     <td className="p-4">
-                      <div className="flex gap-2 justify-end">
+                      <div className="flex gap-1.5 justify-end">
+                        <button onClick={()=>handleExportSingle(p)} title="Экспорт этого проекта в JSON" className="h-8 px-2.5 rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[11px] font-mono">⤓ json</button>
                         <button onClick={()=>openEdit(p)} className="h-8 px-3 rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[12px]">edit</button>
                         <Link href={`/projects/${p.slug}`} target="_blank" className="h-8 px-3 rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[12px] flex items-center">view</Link>
                         <button onClick={()=>handleDelete(p.id)} className="h-8 w-8 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 flex items-center justify-center">✕</button>
